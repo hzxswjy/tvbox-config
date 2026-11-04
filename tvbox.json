@@ -1,22 +1,26 @@
 {
-  "sites": [],
-  "lives": [],
-  "parses": [
+  "sites": [
     {
-      "name": "聚合",
-      "type": 1,
-      "url": "Web",
-      "ext": {
-        "flag": [
-          "qq",
-          "iqiyi",
-          "youku",
-          "mgtv",
-          "bilibili"
-        ]
-      }
+      "key": "csp_dummy",
+      "name": "[占位] 待填源",
+      "type": 3,
+      "api": "http://192.168.1.19:8000/dummy",
+      "searchable": 0,
+      "quickSearch": 0,
+      "filterable": 0,
+      "ext": ""
     }
   ],
+  "lives": [
+    {
+      "name": "公共直播",
+      "type": 0,
+      "url": "http://192.168.1.19:8000/live.txt",
+      "ua": "",
+      "epg": ""
+    }
+  ],
+  "parses": [],
   "flags": [
     "qq",
     "iqiyi",
