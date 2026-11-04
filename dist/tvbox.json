@@ -1,0 +1,27 @@
+{
+  "sites": [],
+  "lives": [],
+  "parses": [
+    {
+      "name": "聚合",
+      "type": 1,
+      "url": "Web",
+      "ext": {
+        "flag": [
+          "qq",
+          "iqiyi",
+          "youku",
+          "mgtv",
+          "bilibili"
+        ]
+      }
+    }
+  ],
+  "flags": [
+    "qq",
+    "iqiyi",
+    "youku",
+    "mgtv",
+    "bilibili"
+  ]
+}

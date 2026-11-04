@@ -1,0 +1,9 @@
+{
+  "_说明": "把你的采集站填进 sites 数组，然后运行 node build.mjs。字段含义见 README.md。",
+  "sites": [],
+  "lives": [],
+  "parses": [
+    { "name": "聚合", "type": 1, "url": "Web", "ext": { "flag": ["qq", "iqiyi", "youku", "mgtv", "bilibili"] } }
+  ],
+  "flags": ["qq", "iqiyi", "youku", "mgtv", "bilibili"]
+}

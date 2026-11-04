@@ -1,0 +1,34 @@
+{
+  "_字段说明": {
+    "key": "唯一标识，建议 csp_ 前缀 + 站点域名，重复的 key 会被构建器去重",
+    "name": "TVBox 里显示的源名称，建议加前缀便于识别，如 [A] xx影视",
+    "type": "3 = Apple CMS 采集站（绝大多数情况用这个）",
+    "api": "采集站接口地址，通常形如 https://域名/api.php/provide/vod/",
+    "searchable": "1 = 参与全站搜索",
+    "quickSearch": "1 = 参与首页快速搜索（源多了会拖慢搜索，建议只给主力源开）",
+    "filterable": "1 = 支持分类筛选",
+    "ext": "扩展参数，一般留空字符串"
+  },
+  "sites": [
+    {
+      "key": "csp_example1",
+      "name": "[A] 示例源一",
+      "type": 3,
+      "api": "https://example.com/api.php/provide/vod/",
+      "searchable": 1,
+      "quickSearch": 1,
+      "filterable": 1,
+      "ext": ""
+    },
+    {
+      "key": "csp_example2",
+      "name": "[B] 示例源二",
+      "type": 3,
+      "api": "https://example2.com/api.php/provide/vod/",
+      "searchable": 1,
+      "quickSearch": 0,
+      "filterable": 1,
+      "ext": ""
+    }
+  ]
+}
