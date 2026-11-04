@@ -72,6 +72,10 @@ https://<用户名>.github.io/<仓库名>/tvbox.json
 
 电视端：TVBox → 设置 → 配置地址 → 粘贴上面的 URL（**结尾不要加斜杠**）→ 确定 → 回首页等待加载。
 
+## 自动保鲜
+
+`.github/workflows/refresh-sources.yml` 每天北京时间 02:30 自动重跑探测并提交结果：挂掉的源被排到末尾（不删，留给你自己判断），延迟变化会体现在排序里。所以**即使你三个月不管它，配置也不会烂掉**。也可以在 Actions 页面手动 `Run workflow` 立即触发。
+
 ## 已知风险与对策
 
 1. **证书链**：GitHub Pages 用 Let's Encrypt，当前链根是 `ISRG Root X1`。Android 4.4 系统信任库**不含**该根（本机实测确认），若 TVBox 未做 trust-all 会报 SSL 错误。

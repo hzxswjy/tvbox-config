@@ -1,0 +1,35 @@
+name: refresh-sources
+
+# 每天自动重跑探测，把挂掉的源重新排序/剔除，解决"静态配置会过期"的弱点
+on:
+  schedule:
+    - cron: '30 18 * * *' # UTC 18:30 = 北京时间 02:30，电视闲置时段
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 构建并探测
+        run: node build.mjs --timeout 8000
+
+      - name: 提交变更
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tvbox.json dist/
+          if git diff --staged --quiet; then
+            echo "无变化，跳过提交"
+          else
+            git commit -m "chore: 源可用性刷新 $(date -u +%F)"
+            git push
+          fi
