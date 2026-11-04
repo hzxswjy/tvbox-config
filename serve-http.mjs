@@ -21,11 +21,13 @@ const LAN_CFG = path.join(ROOT, 'dist', 'tvbox.lan.json');
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
+  // 注意：path.normalize 在 Windows 上会把 "/" 换成 "\"，所以要在 normalize 之前用 pathname 判断
+  const wantCfg = url.pathname === '/' || /^\/tvbox\.json\/?$/i.test(url.pathname);
   let file = url.pathname === '/' ? '/tvbox.json' : url.pathname;
   file = path.normalize(file).replace(/^(\.\.[/\\])+/, '');
   let full = path.join(ROOT, file);
   // /tvbox.json 优先给局域网版（内网地址不变，电视不依赖公网）
-  if (file === '/tvbox.json' || file === '/') {
+  if (wantCfg) {
     try {
       await fs.access(LAN_CFG);
       full = LAN_CFG;
