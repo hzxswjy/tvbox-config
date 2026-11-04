@@ -78,9 +78,16 @@ https://<用户名>.github.io/<仓库名>/tvbox.json
 
 ## 已知风险与对策
 
-1. **证书链**：GitHub Pages 用 Let's Encrypt，当前链根是 `ISRG Root X1`。Android 4.4 系统信任库**不含**该根（本机实测确认），若 TVBox 未做 trust-all 会报 SSL 错误。
+1. **证书链**：GitHub Pages 用 Let's Encrypt，当前链根是 `ISRG Root X1`。Android 4.4 系统信任库**不含**该根（本机实测确认，156 个系统证书无一命中），若 TVBox 未做 trust-all 会报 SSL 错误。
    - 本设备已装 TVBox 含自定义 `SSLContext`/`checkServerTrusted`，多数分支为 trust-all，概率可用；
-   - 若电视端报 `SSLHandshakeException` / `certificate`：改用本地 HTTP 方式（电脑或 NAS 起 `python -m http.server`，地址 `http://<内网IP>:8000/tvbox.json`），或换装内置 trust-all 的 TVBox 版本。
+   - **若电视端报 `SSLHandshakeException` / `certificate`，启用 HTTP 回退**：
+
+     ```bash
+     node serve-http.mjs        # 默认 8000 端口，纯 HTTP，无 TLS
+     ```
+
+     电视端配置地址改为：`http://192.168.1.19:8000/tvbox.json`
+     （本机防火墙已放行 8000 入站；此方式要求电脑开机，且电脑 IP 需在路由器静态绑定）
 2. **国内可达性**：`*.github.io` 在国内**时快时慢**（本机实测首字节 9s，偶发超时）。TVBox 加载有重试，通常能过；若长期打不开，把同一份 `tvbox.json` 放到国内静态托管（OSS/COS 静态网站 + 自定义域名）即可，文件内容不用改。
 3. **静态配置没有的能力**：跨源同名合并、多端观看记录同步、源健康度自动停用、服务端代理转发。这些属于 MoonTV 一类服务端方案，见主方案的方案对比结论。
 4. **源失效**：采集站变动频繁，定期 `node build.mjs` 重跑，`dist/stats.json` 里 FAIL 的删掉即可。
