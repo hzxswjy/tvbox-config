@@ -1,9 +1,32 @@
 {
-  "_说明": "把你的采集站填进 sites 数组，然后运行 node build.mjs。字段含义见 README.md。",
-  "sites": [],
-  "lives": [],
-  "parses": [
-    { "name": "聚合", "type": 1, "url": "Web", "ext": { "flag": ["qq", "iqiyi", "youku", "mgtv", "bilibili"] } }
+  "_说明": "把你的采集站填进 sites 数组，然后运行 node build.mjs。lives 段不可清空（jun fork 空直播会崩溃）。",
+  "sites": [
+    {
+      "key": "csp_dummy",
+      "name": "[占位] 待填源",
+      "type": 3,
+      "api": "http://192.168.1.19:8000/dummy",
+      "searchable": 0,
+      "quickSearch": 0,
+      "filterable": 0,
+      "ext": ""
+    }
   ],
-  "flags": ["qq", "iqiyi", "youku", "mgtv", "bilibili"]
+  "lives": [
+    {
+      "name": "公共直播",
+      "type": 0,
+      "url": "http://192.168.1.19:8000/live.txt",
+      "ua": "",
+      "epg": ""
+    }
+  ],
+  "parses": [],
+  "flags": [
+    "qq",
+    "iqiyi",
+    "youku",
+    "mgtv",
+    "bilibili"
+  ]
 }
