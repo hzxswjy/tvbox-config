@@ -72,6 +72,28 @@ https://<用户名>.github.io/<仓库名>/tvbox.json
 
 电视端：TVBox → 设置 → 配置地址 → 粘贴上面的 URL（**结尾不要加斜杠**）→ 确定 → 回首页等待加载。
 
+## 部署到 Cloudflare Pages（备份线路，已完成）
+
+GitHub Pages 在国内"时快时慢"，Cloudflare Pages 作为第二公网源。**注意：`tvbox-config` 项目名已被占用，实际分配的域名为 `tvbox-config-5gm.pages.dev`。**
+
+```bash
+# 一次性准备部署目录（与仓库根目录内容一致的干净副本）
+rm -rf public && mkdir public && cp tvbox.json live.txt README.md public/
+
+# 登录（浏览器 OAuth 授权，一次即可）
+npx wrangler login
+
+# 首次创建项目
+npx wrangler pages project create tvbox-config --production-branch main
+
+# 部署（更新配置后重新执行本条即可）
+npx wrangler pages deploy public --project-name tvbox-config --branch main --commit-dirty=true
+```
+
+公网地址：`https://tvbox-config-5gm.pages.dev/tvbox.json`
+
+**与 GitHub Pages 的差异**：GitHub Pages 由每日 CI 自动重建保鲜；Cloudflare Pages 是手动快照，**改完配置需重跑上面的 deploy 命令**。两个源内容以 `sources.json` 为唯一上游。
+
 ## 自动保鲜
 
 `.github/workflows/refresh-sources.yml` 每天北京时间 02:30 自动重跑探测并提交结果：挂掉的源被排到末尾（不删，留给你自己判断），延迟变化会体现在排序里。所以**即使你三个月不管它，配置也不会烂掉**。也可以在 Actions 页面手动 `Run workflow` 立即触发。
