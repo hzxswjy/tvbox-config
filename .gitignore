@@ -5,3 +5,4 @@ dist/remote-check.json
 cn.m3u.raw
 dist/remote-check.json
 public/
+.wrangler/
