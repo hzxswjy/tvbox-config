@@ -16,12 +16,23 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.argv[2] || 8000);
+/** 局域网专用配置：构建器产出的内网地址版本（电视走局域网时用它，避免依赖公网） */
+const LAN_CFG = path.join(ROOT, 'dist', 'tvbox.lan.json');
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host}`);
   let file = url.pathname === '/' ? '/tvbox.json' : url.pathname;
   file = path.normalize(file).replace(/^(\.\.[/\\])+/, '');
-  const full = path.join(ROOT, file);
+  let full = path.join(ROOT, file);
+  // /tvbox.json 优先给局域网版（内网地址不变，电视不依赖公网）
+  if (file === '/tvbox.json' || file === '/') {
+    try {
+      await fs.access(LAN_CFG);
+      full = LAN_CFG;
+    } catch {
+      /* 没构建过就用仓库根目录的公网版 */
+    }
+  }
   if (!full.startsWith(ROOT)) {
     res.writeHead(403).end('forbidden');
     return;

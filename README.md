@@ -94,6 +94,107 @@ npx wrangler pages deploy public --project-name tvbox-config --branch main --com
 
 **与 GitHub Pages 的差异**：GitHub Pages 由每日 CI 自动重建保鲜；Cloudflare Pages 是手动快照，**改完配置需重跑上面的 deploy 命令**。两个源内容以 `sources.json` 为唯一上游。
 
+## 配置字段详解（公网部署要点）
+
+### 1. `sites[].api` —— 采集站接口，**不能是内网地址**
+
+`http://192.168.1.19:8000/dummy.json` 这类地址在公网部署后是**死的**：`192.168.x.x` 是 RFC1918 私有地址，公网设备无从路由，电视以外的人打开配置只会一直转圈/报错。它只在"电视和这台电脑同处一个局域网、且电脑开着服务"时有效。
+
+本项目用**构建期重写**解决，不用手工改两遍：
+
+- `sources/sources.json` 里可以放心写本机地址做占位；
+- `node build.mjs` 会把所有内网前缀（`192.168.*` / `10.*` / `172.16-31.*` / `localhost` / `127.0.0.1`）重写为基地址下的同路径文件，产出两份：
+
+| 产物 | 基地址 | 用途 |
+|---|---|---|
+| `tvbox.json` | `https://hzxswjy.github.io/tvbox-config` | 公网（GitHub Pages / Cloudflare Pages） |
+| `dist/tvbox.lan.json` | `http://192.168.1.19:8000`（自动探测本机 IP） | 局域网（`serve-http.mjs` 对电视提供） |
+
+改基地址：`node build.mjs --base https://tvbox-config-5gm.pages.dev`（Cloudflare 部署时用）。
+
+**公网 `api` 的正确形态**（三选一）：
+
+1. **真实采集站**：`https://某站.com/api.php/provide/vod/`（必须公网可达，建议 https，结尾斜杠按站点要求保留）
+2. **同仓库托管的静态占位**：`https://hzxswjy.github.io/tvbox-config/dummy.json` —— 本仓库已提供 `dummy.json`（返回空列表的合法 CMS 响应），保证占位站点不报错、不卡 UI
+3. **不要**留空、不要指向 `127.0.0.1`、不要指向任何内网段
+
+### 2. `lives[].url` —— 直播源文本，**必须是绝对 URL**
+
+`http://192.168.1.19:8000/live.txt` 同样是内网地址，公网不可达。正确形态：
+
+```
+https://hzxswjy.github.io/tvbox-config/live.txt      # GitHub Pages
+https://tvbox-config-5gm.pages.dev/live.txt          # Cloudflare Pages
+```
+
+要点：
+- **必须是绝对地址**（含 `https://` 和完整文件名）。TVBox 不支持相对路径，写成 `live.txt` 会直接拉取失败；
+- 指向的是 **M3U/TXT 纯文本**（TVBox 直播格式：`分组名,#genre#` + `频道名,播放地址`），不是 JSON；
+- 内容是**直播频道清单**，与 `sites`（点播）互不影响；
+- 多组直播就写多条，电视端会显示为一个"直播源"下拉。
+
+### 3. `parses` —— 点播 VIP 解析器（当前为空）
+
+作用：部分采集站的影片直链被平台加密/防盗链，直接播会失败。`parses` 定义"拿到播放页 URL 后，交给谁去解出真实 m3u8/mp4"，电视端播放失败时会弹出解析器列表让你选。
+
+常见字段：
+
+| 字段 | 说明 |
+|---|---|
+| `name` | 显示名（遥控器上看到的就是它，建议短） |
+| `type` | 解析方式：`0` 直链拼接（`url + 视频页URL`）、`1` 解析接口/嗅探（最常见）、`2` JSON 专用解析、`3` 聚合/特殊（`"url":"Web"` 表示走内置 Web 解析）。不同 TVBox 分支对 `2/3` 的解释略有差异 |
+| `url` | 解析接口地址，留空则使用内置嗅探 |
+| `ext` | 扩展：`flag` 限定只对哪些平台生效、`header` 自定义 UA/Referer、`js` 自定义脚本 |
+
+可扩展写法（把 URL 换成你自己验证过的解析接口）：
+
+```json
+"parses": [
+  {
+    "name": "聚合",
+    "type": 3,
+    "url": "Web"
+  },
+  {
+    "name": "Json解析",
+    "type": 1,
+    "url": "https://jx.example.com/json.php?url=",
+    "ext": {
+      "flag": ["qq", "iqiyi", "youku", "mgtv", "bilibili"],
+      "header": {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/110 Mobile Safari/537.36"
+      }
+    }
+  },
+  {
+    "name": "直链",
+    "type": 0,
+    "url": "https://jx.example.com/?url="
+  },
+  {
+    "name": "嗅探",
+    "type": 1,
+    "url": ""
+  }
+]
+```
+
+注意：解析接口失效极其常见（今天能用明天挂），所以**顺序很重要**——把稳定的放前面；本仓库目前保持 `parses: []`，不做无用配置，等你确认可用的解析接口再加。
+
+### 4. `flags` —— 启用哪些内置解析平台
+
+作用：告诉 TVBox"这些平台的链接，允许用内置解析器处理"。它是**平台白名单**，不是解析器定义；没有匹配 `flag` 的链接不会进入解析流程。
+
+当前值 `["qq","iqiyi","youku","mgtv","bilibili"]` 即腾讯视频、爱奇艺、优酷、芒果TV、哔哩哔哩。
+
+常见可加值（按需增删，写多了不影响，写少了对应平台播不了）：
+
+```json
+"flags": ["qq", "iqiyi", "youku", "mgtv", "bilibili", "sohu", "letv", "pptv", "wasu", "migu"]
+```
+
+与 `parses[].ext.flag` 的区别：`flags` 是**全局**白名单（决定"哪些平台参与解析"），`ext.flag` 是**单个解析器**的适用范围（决定"这个解析器只管哪几个平台"）。两者是交集关系。
+
 ## 自动保鲜
 
 `.github/workflows/refresh-sources.yml` 每天北京时间 02:30 自动重跑探测并提交结果：挂掉的源被排到末尾（不删，留给你自己判断），延迟变化会体现在排序里。所以**即使你三个月不管它，配置也不会烂掉**。也可以在 Actions 页面手动 `Run workflow` 立即触发。

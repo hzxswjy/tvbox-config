@@ -3,12 +3,27 @@
     "key": "唯一标识，建议 csp_ 前缀 + 站点域名，重复的 key 会被构建器去重",
     "name": "TVBox 里显示的源名称，建议加前缀便于识别，如 [A] xx影视",
     "type": "3 = Apple CMS 采集站（绝大多数情况用这个）",
-    "api": "采集站接口地址，通常形如 https://域名/api.php/provide/vod/",
+    "api": "采集站接口地址，必须是公网可达的绝对地址，形如 https://域名/api.php/provide/vod/；写内网地址（192.168.x.x）构建时会被重写为公网基地址下的同路径文件",
     "searchable": "1 = 参与全站搜索",
     "quickSearch": "1 = 参与首页快速搜索（源多了会拖慢搜索，建议只给主力源开）",
     "filterable": "1 = 支持分类筛选",
     "ext": "扩展参数，一般留空字符串"
   },
+  "_lives字段说明": {
+    "name": "电视端直播源下拉里显示的名字",
+    "type": "0 = 远程 TXT/M3U 列表（最常用）",
+    "url": "必须绝对地址，指向 TXT（分组行 分组名,#genre#，频道行 频道名,播放地址）或 M3U；内网地址会被构建时重写",
+    "ua": "拉取列表用的 User-Agent，一般留空",
+    "epg": "节目单 XMLTV 地址，可留空"
+  },
+  "_parses字段说明": {
+    "name": "解析器显示名，遥控器上可见，建议短",
+    "type": "0 直链拼接 / 1 解析接口或嗅探（最常见）/ 2 JSON 解析 / 3 聚合（url 写 Web 表示内置 Web 解析）",
+    "url": "解析接口地址；type=1 且 url 为空时使用内置嗅探",
+    "ext.flag": "该解析器只对这些平台生效，与顶层 flags 取交集",
+    "ext.header": "自定义请求头，如 User-Agent / Referer"
+  },
+  "_flags字段说明": "全局平台白名单，决定哪些平台的链接允许走解析。常用值：qq iqiyi youku mgtv bilibili sohu letv pptv wasu migu",
   "sites": [
     {
       "key": "csp_example1",
@@ -30,5 +45,31 @@
       "filterable": 1,
       "ext": ""
     }
-  ]
+  ],
+  "lives": [
+    {
+      "name": "公共直播",
+      "type": 0,
+      "url": "https://hzxswjy.github.io/tvbox-config/live.txt",
+      "ua": "",
+      "epg": ""
+    }
+  ],
+  "parses": [
+    { "name": "聚合", "type": 3, "url": "Web" },
+    {
+      "name": "Json解析",
+      "type": 1,
+      "url": "https://jx.example.com/json.php?url=",
+      "ext": {
+        "flag": ["qq", "iqiyi", "youku", "mgtv", "bilibili"],
+        "header": {
+          "User-Agent": "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/110 Mobile Safari/537.36"
+        }
+      }
+    },
+    { "name": "直链", "type": 0, "url": "https://jx.example.com/?url=" },
+    { "name": "嗅探", "type": 1, "url": "" }
+  ],
+  "flags": ["qq", "iqiyi", "youku", "mgtv", "bilibili"]
 }
