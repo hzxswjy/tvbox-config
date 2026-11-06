@@ -1,5 +1,5 @@
 {
-  "builtAt": "2026-11-05T23:46:44.743Z",
+  "builtAt": "2026-11-06T23:24:36.492Z",
   "total": 1,
   "alive": 0,
   "duplicates": {
@@ -10,7 +10,7 @@
   "sources": [
     {
       "name": "[占位] 待填源",
-      "ms": 8002,
+      "ms": 8000,
       "alive": false,
       "note": "超时"
     }
