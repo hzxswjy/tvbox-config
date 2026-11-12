@@ -4,7 +4,7 @@
       "key": "csp_dummy",
       "name": "[占位] 待填源",
       "type": 3,
-      "api": "http://10.1.0.14:8000/dummy.json",
+      "api": "http://10.1.0.82:8000/dummy.json",
       "searchable": 0,
       "quickSearch": 0,
       "filterable": 0,
@@ -15,7 +15,7 @@
     {
       "name": "公共直播",
       "type": 0,
-      "url": "http://10.1.0.14:8000/live.txt",
+      "url": "http://10.1.0.82:8000/live.txt",
       "ua": "",
       "epg": ""
     }
